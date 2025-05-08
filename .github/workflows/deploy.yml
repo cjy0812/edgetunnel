@@ -23,5 +23,4 @@ jobs:
 
       - name: Deploy to Cloudflare
         run: wrangler deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN:OLJgrdxKIYbsT1KmJ7-TDkiB1Rjzj3d17bjvxFNF
