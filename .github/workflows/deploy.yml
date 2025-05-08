@@ -10,17 +10,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 20+
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '20.x'
 
-      - name: Install Wrangler
-        run: npm install -g wrangler@4
-
-      - name: Deploy to Cloudflare
-        run: wrangler deploy
-          OLJgrdxKIYbsT1KmJ7-TDkiB1Rjzj3d17bjvxFNF
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}  # 使用 secrets 来传递 token
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}  # 如果你有 accountId 也传递它
