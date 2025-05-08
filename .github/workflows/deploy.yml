@@ -18,10 +18,10 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install wrangler v3.8.0
-        run: npm install -g wrangler@3.8.0
+      - name: Install wrangler@4
+        run: npm install -g wrangler@4
 
-      - name: Deploy with wrangler
-        run: wrangler publish
+      - name: Deploy to Cloudflare
+        run: wrangler deploy
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
