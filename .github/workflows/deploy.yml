@@ -18,11 +18,9 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Set CLOUDFLARE_API_TOKEN
-        run: echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> $GITHUB_ENV
-
       - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          export CLOUDFLARE_API_TOKEN="084099361afdf1265c20c09fb3834a6f"
+          npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: "OLJgrdxKIYbsT1KmJ7-TDkiB1Rjzj3d17bjvxFNF"  # 或者直接写token，替换YOUR_CLOUDFLARE_API_TOKEN为实际值
