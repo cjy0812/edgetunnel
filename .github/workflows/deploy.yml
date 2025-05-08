@@ -19,4 +19,4 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           scriptPath: _worker.js
-          name: youngkkk-code-v     # 你要部署的 Worker 名称
+          name: lingdu-speak-fire02     # 你要部署的 Worker 名称
