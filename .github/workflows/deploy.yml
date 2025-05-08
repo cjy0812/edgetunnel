@@ -23,4 +23,4 @@ jobs:
 
       - name: Deploy to Cloudflare
         run: wrangler deploy
-          CLOUDFLARE_API_TOKEN:OLJgrdxKIYbsT1KmJ7-TDkiB1Rjzj3d17bjvxFNF
+          OLJgrdxKIYbsT1KmJ7-TDkiB1Rjzj3d17bjvxFNF
