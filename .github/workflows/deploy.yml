@@ -9,8 +9,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -18,9 +19,10 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Deploy to Cloudflare Workers
-        run: |
-          export CLOUDFLARE_API_TOKEN="084099361afdf1265c20c09fb3834a6f"
-          npx wrangler deploy
+      - name: Install Wrangler
+        run: npm install -g wrangler@4
+
+      - name: Deploy to Cloudflare
+        run: wrangler deploy
         env:
-          CLOUDFLARE_API_TOKEN: "OLJgrdxKIYbsT1KmJ7-TDkiB1Rjzj3d17bjvxFNF"  # 或者直接写token，替换YOUR_CLOUDFLARE_API_TOKEN为实际值
+          CLOUDFLARE_API_TOKEN: bhMCA9-7RKkqhjVBnpRZPwvGXFIxNVS8WLbV2acd
