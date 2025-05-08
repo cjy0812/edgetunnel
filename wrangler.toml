@@ -1,0 +1,8 @@
+name = "lingdu-speak-fire02"          # 你的 Worker 名
+type = "javascript"                 # Worker 类型
+account_id = "084099361afdf1265c20c09fb3834a6f"   # 替换成你的实际 ID
+workers_dev = true
+
+[build]
+upload.format = "modules"
+upload.main = "./_worker.js"
