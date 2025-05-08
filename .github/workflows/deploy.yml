@@ -3,14 +3,14 @@ name: Deploy to Cloudflare Workers
 on:
   push:
     paths:
-      - '_worker.js'         # 当 _worker.js 被更新时触发部署
-  workflow_dispatch:         # 支持手动触发
+      - '_worker.js'
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Deploy to Cloudflare
@@ -18,5 +18,3 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          scriptPath: _worker.js
-          name: lingdu-speak-fire02     # 你要部署的 Worker 名称
