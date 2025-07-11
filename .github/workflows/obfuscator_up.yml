@@ -30,8 +30,8 @@ jobs:
 
       - name: 加载源码
         run: |
-          curl -o 明文源码.js https://github.com/cjy0812/edgetunnel/raw/refs/heads/main/_worker.js
-
+          curl -o 明文源码.js https://raw.githubusercontent.com/cjy0812/edgetunnel/refs/heads/main/_worker.js
+          
       - name: 混淆代码
         run: |
           javascript-obfuscator 明文源码.js --output _worker.js \
