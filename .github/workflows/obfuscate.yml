@@ -1,0 +1,158 @@
+name: Generate and Obfuscate Worker Script
+
+on:
+  workflow_dispatch:  # 手动触发
+  push:
+    branches:
+      - '**'  # 仅匹配分支推送，排除标签推送
+    paths:
+      - '**/_worker.js'  # 监控所有目录下的 _worker.js 文件
+
+jobs:
+  build-and-obfuscate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史记录
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Find and process _worker.js files
+        run: |
+          # 查找所有 _worker.js 文件
+          find . -name "_worker.js" -type f > worker_files.txt
+          
+          if [ ! -s worker_files.txt ]; then
+            echo "错误：在仓库中未找到任何 _worker.js 文件"
+            exit 1
+          fi
+          
+          echo "找到的 _worker.js 文件："
+          cat worker_files.txt
+
+      - name: Install Obfuscator
+        run: npm install javascript-obfuscator
+
+      - name: Obfuscate worker files
+        run: |
+          cat > obfuscate.js << 'EOF'
+          const JavaScriptObfuscator = require('javascript-obfuscator');
+          const fs = require('fs');
+          const path = require('path');
+          const { execSync } = require('child_process');
+
+          // 获取找到的 worker 文件列表
+          const workerFilesList = execSync('find . -name "_worker.js" -type f').toString().trim().split('\n');
+          
+          if (workerFilesList.length === 0 || (workerFilesList.length === 1 && workerFilesList[0] === '')) {
+            console.error('错误：在仓库中未找到任何 _worker.js 文件');
+            process.exit(1);
+          }
+
+          console.log('找到的 _worker.js 文件：');
+          workerFilesList.forEach(file => console.log(' - ' + file));
+
+          // 处理每个找到的 worker 文件
+          workerFilesList.forEach(workerFilePath => {
+            if (!workerFilePath.trim()) return;
+            
+            const fullPath = path.resolve(workerFilePath.trim());
+            const dirName = path.dirname(fullPath);
+            const fileName = path.basename(fullPath);
+            
+            console.log(`\n处理文件: ${fullPath}`);
+
+            if (!fs.existsSync(fullPath)) {
+              console.error(`错误：文件不存在: ${fullPath}`);
+              return;
+            }
+
+            const originalCode = fs.readFileSync(fullPath, 'utf8');
+
+            if (!originalCode || originalCode.trim().length === 0) {
+              console.error(`错误：文件 ${fileName} 为空`);
+              return;
+            }
+
+            const obfuscationOptions = {
+                compact: true,
+                controlFlowFlattening: true,
+                controlFlowFlatteningThreshold: 0.75,
+                deadCodeInjection: false,
+                stringArray: true,
+                stringArrayEncoding: ['base64'],
+                stringArrayThreshold: 1.0,
+                stringArrayRotate: true,
+                stringArrayShuffle: true,
+                stringArrayWrappersCount: 2,
+                stringArrayWrappersChainedCalls: false,
+                stringArrayWrappersParametersMaxCount: 3,
+                renameGlobals: true,
+                identifierNamesGenerator: 'mangled-shuffled',
+                identifierNamesCache: null,
+                identifiersPrefix: '',
+                renameProperties: false,
+                renamePropertiesMode: 'safe',
+                ignoreImports: false,
+                target: 'browser',
+                numbersToExpressions: false,
+                simplify: false,
+                splitStrings: true,
+                splitStringsChunkLength: 1,
+                transformObjectKeys: false,
+                unicodeEscapeSequence: true,
+                selfDefending: true,
+                debugProtection: false,
+                debugProtectionInterval: 0,
+                disableConsoleOutput: true,
+                domainLock: []
+            };
+
+            try {
+              const obfuscatedCode = JavaScriptObfuscator.obfuscate(originalCode, obfuscationOptions).getObfuscatedCode();
+              
+              // 在同目录下生成混淆后的文件，命名为 lock.js
+              const outputPath = path.join(dirName, 'lock.js');
+              fs.writeFileSync(outputPath, obfuscatedCode, 'utf8');
+              console.log(`成功将 '${fileName}' 混淆并保存至 '${outputPath}'`);
+            } catch (error) {
+              console.error(`混淆文件 ${fileName} 时出错:`, error.message);
+            }
+          });
+          EOF
+          node obfuscate.js
+
+      - name: Check for generated lock.js files
+        run: |
+          find . -name "lock.js" -type f > lock_files.txt
+          if [ -s lock_files.txt ]; then
+            echo "生成的 lock.js 文件："
+            cat lock_files.txt
+          else
+            echo "未生成任何 lock.js 文件"
+            exit 1
+          fi
+
+      - name: Commit and push obfuscated files
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 添加所有新生成的 lock.js 文件
+          find . -name "lock.js" -type f | while read file; do
+            git add "$file"
+          done
+          
+          if git diff --staged --quiet; then
+            echo "没有需要提交的更改，混淆文件已是最新版本"
+          else
+            git commit -m "自动生成混淆的 worker 文件 [skip ci]"
+            git push
+            echo "已成功提交并推送混淆文件"
+          fi
